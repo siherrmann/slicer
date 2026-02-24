@@ -50,7 +50,7 @@ func (h *ViewerHandler) HandleView(w http.ResponseWriter, r *http.Request) {
 	h.LastPaths = paths
 
 	component := view.STLViewer(h.Slicer.Model, paths, h.Slicer.Config)
-	component.Render(r.Context(), w)
+	_ = component.Render(r.Context(), w)
 }
 
 func (h *ViewerHandler) HandleSlice(w http.ResponseWriter, r *http.Request) {
@@ -204,7 +204,7 @@ func (h *ViewerHandler) HandleSlice(w http.ResponseWriter, r *http.Request) {
 
 	// Render only the sidebar form + script tags — canvas is untouched
 	component := view.SlicerSidebar(h.Slicer.Model, paths, config)
-	component.Render(r.Context(), w)
+	_ = component.Render(r.Context(), w)
 }
 
 // HandleExport generates G-code from the last sliced paths and returns it as a downloadable file.
@@ -225,5 +225,5 @@ func (h *ViewerHandler) HandleExport(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(gcode)))
-	w.Write([]byte(gcode))
+	_, _ = w.Write([]byte(gcode))
 }
