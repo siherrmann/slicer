@@ -121,7 +121,6 @@ func CleanFullPaths(paths []model.ContinuousPath, epsilon float64) model.Continu
 		return model.ContinuousPath{}
 	}
 
-	// Combine all segments from all paths
 	var allSegments []model.PathSegment
 	for _, path := range paths {
 		allSegments = append(allSegments, path.Segments...)
@@ -131,79 +130,45 @@ func CleanFullPaths(paths []model.ContinuousPath, epsilon float64) model.Continu
 		return model.ContinuousPath{}
 	}
 
-	// Build a list of all points with their travel status
-	type PointWithTravel struct {
-		Point    model.Vector3
-		IsTravel bool
-	}
+	var cleanedSegments []model.PathSegment
 
-	points := []PointWithTravel{{Point: allSegments[0].Start, IsTravel: allSegments[0].IsTravel}}
-	for _, seg := range allSegments {
-		points = append(points, PointWithTravel{Point: seg.End, IsTravel: seg.IsTravel})
-	}
+	currentSection := []model.Vector3{allSegments[0].Start}
+	currentIsTravel := allSegments[0].IsTravel
 
-	// Apply RDP algorithm separately to continuous extrusion and travel sections
-	simplified := []PointWithTravel{points[0]}
-	currentSectionStart := 0
-	currentIsTravel := points[0].IsTravel
+	flushSection := func(section []model.Vector3, isTravel bool) {
+		if len(section) < 2 {
+			return
+		}
 
-	for i := 1; i < len(points); i++ {
-		// Check if we're switching between travel and extrusion
-		if points[i].IsTravel != currentIsTravel || i == len(points)-1 {
-			endIdx := i
-			if i == len(points)-1 {
-				endIdx = i + 1
-			}
+		// Simplify
+		secEpsilon := epsilon
+		if isTravel {
+			secEpsilon = epsilon * 2
+		}
 
-			// Extract section
-			section := make([]model.Vector3, endIdx-currentSectionStart)
-			for j := currentSectionStart; j < endIdx; j++ {
-				section[j-currentSectionStart] = points[j].Point
-			}
-
-			// Simplify section with RDP
-			var simplifiedSection []model.Vector3
-			if len(section) > 2 {
-				// Only simplify extrusion paths, keep travel moves as-is (or use larger epsilon)
-				sectionEpsilon := epsilon
-				if currentIsTravel {
-					sectionEpsilon = epsilon * 2 // More aggressive for travel moves
-				}
-				simplifiedSection = ramerDouglasPeucker(section, sectionEpsilon)
-			} else {
-				simplifiedSection = section
-			}
-
-			// Add simplified points (skip first if not the very first section, as it's already added)
-			startIdx := 0
-			if currentSectionStart > 0 {
-				startIdx = 1
-			}
-			for j := startIdx; j < len(simplifiedSection); j++ {
-				simplified = append(simplified, PointWithTravel{
-					Point:    simplifiedSection[j],
-					IsTravel: currentIsTravel,
-				})
-			}
-
-			currentSectionStart = i
-			currentIsTravel = points[i].IsTravel
+		simplified := ramerDouglasPeucker(section, secEpsilon)
+		for i := 0; i < len(simplified)-1; i++ {
+			cleanedSegments = append(cleanedSegments, model.PathSegment{
+				Start:    simplified[i],
+				End:      simplified[i+1],
+				IsTravel: isTravel,
+			})
 		}
 	}
 
-	// Convert back to segments
-	var cleanedSegments []model.PathSegment
-	for i := 0; i < len(simplified)-1; i++ {
-		cleanedSegments = append(cleanedSegments, model.PathSegment{
-			Start:    simplified[i].Point,
-			End:      simplified[i+1].Point,
-			IsTravel: simplified[i].IsTravel,
-		})
+	for _, seg := range allSegments {
+		if seg.IsTravel != currentIsTravel {
+			flushSection(currentSection, currentIsTravel)
+			currentSection = []model.Vector3{seg.Start}
+			currentIsTravel = seg.IsTravel
+		}
+		currentSection = append(currentSection, seg.End)
 	}
+	flushSection(currentSection, currentIsTravel)
 
 	return model.ContinuousPath{
 		Segments: cleanedSegments,
-		PathType: model.PathExtrusion, // Combined path type
+		PathType: model.PathExtrusion,
 	}
 }
 

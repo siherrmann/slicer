@@ -707,6 +707,10 @@ func GenerateConcentricInfillFull(shell *model.Polygon, params model.SliceConfig
 	offset := spacing
 
 	for currentPolygon != nil && len(currentPolygon.Points) > 2 {
+		// fmt.Printf("Concentric loop: points=%d area=%.6f\n", len(currentPolygon.Points), currentPolygon.GetArea())
+		if math.Abs(currentPolygon.GetArea()) < 1e-6 {
+			break
+		}
 		// Create segments for this concentric ring
 		for j := 0; j < len(currentPolygon.Points); j++ {
 			nextIdx := (j + 1) % len(currentPolygon.Points)
@@ -718,7 +722,11 @@ func GenerateConcentricInfillFull(shell *model.Polygon, params model.SliceConfig
 		}
 
 		// Offset inward for next ring
-		currentPolygon = currentPolygon.OffsetPolygon(-offset)
+		next := currentPolygon.OffsetPolygon(-offset)
+		if next == nil || len(next.Points) < 3 || math.Abs(next.GetArea()) >= math.Abs(currentPolygon.GetArea()) {
+			break
+		}
+		currentPolygon = next
 	}
 
 	return model.ContinuousPath{
