@@ -1,3 +1,8 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/siherrmann/slicer.svg)](https://pkg.go.dev/github.com/siherrmann/slicer)
+[![Go Coverage](https://github.com/siherrmann/slicer/wiki/coverage.svg)](https://raw.githack.com/wiki/siherrmann/slicer/coverage.html)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/siherrmann/slicer/blob/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/siherrmann/slicer)](http://goreportcard.com/report/siherrmann/slicer)
+
 # slicer
 
 ## 💡 Goal of this package
