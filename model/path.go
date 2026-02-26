@@ -23,7 +23,7 @@ const (
 type ContinuousPath struct {
 	Segments   []PathSegment `json:"segments"`
 	PathType   PathType      `json:"path_type"`
-	LayerIndex int           `json:"layer_index,omitempty"` // Layer index for G-code export
+	LayerIndex int           `json:"-"` // Layer index for G-code export
 }
 
 // PrintResult holds statistics about a print path

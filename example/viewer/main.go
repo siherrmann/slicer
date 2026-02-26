@@ -28,7 +28,7 @@ func main() {
 		Addr:         ":4000",
 		Handler:      r,
 		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		WriteTimeout: 60 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 
