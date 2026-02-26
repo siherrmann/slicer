@@ -105,7 +105,7 @@ func TestPolygon_ToContinuousPath(t *testing.T) {
 		Points:   []Vector3{{X: 0, Y: 0}, {X: 10, Y: 0}, {X: 10, Y: 10}},
 		IsClosed: true,
 	}
-	path := p.ToContinuousPath(50.0, CategoryOuterWall)
+	path := p.ToContinuousPath(50.0, CategoryOuterWall, 0)
 
 	assert.Equal(t, 3, len(path.Segments))
 	assert.Equal(t, PathExtrusion, path.PathType)
@@ -116,7 +116,7 @@ func TestPolygon_ToContinuousPath(t *testing.T) {
 		Points:   []Vector3{{X: 0, Y: 0}, {X: 10, Y: 0}, {X: 10, Y: 10}},
 		IsClosed: false,
 	}
-	pathOpen := pOpen.ToContinuousPath(50.0, CategoryOuterWall)
+	pathOpen := pOpen.ToContinuousPath(50.0, CategoryOuterWall, 0)
 	assert.Equal(t, 2, len(pathOpen.Segments), "Open polygon should not have closing segment")
 }
 

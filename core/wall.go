@@ -30,7 +30,7 @@ func CalculateInfillOffset(params model.SliceConfig) float64 {
 }
 
 // GenerateWalls generates the wall paths for a given shell polygon based on the slicing configuration.
-func GenerateWalls(shell model.Polygon, params model.SliceConfig) []model.ContinuousPath {
+func GenerateWalls(shell model.Polygon, params model.SliceConfig, layerIndex int) []model.ContinuousPath {
 	wallCount := CalculateWallCount(params)
 	wallPaths := make([]model.ContinuousPath, 0, wallCount)
 
@@ -51,7 +51,7 @@ func GenerateWalls(shell model.Polygon, params model.SliceConfig) []model.Contin
 
 			// Create a continuous path for this wall (closed loop)
 			wall.IsClosed = true // Offset polygons are inherently closed
-			wallPaths = append(wallPaths, wall.ToContinuousPath(speed, category))
+			wallPaths = append(wallPaths, wall.ToContinuousPath(speed, category, layerIndex))
 		}
 	}
 

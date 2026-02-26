@@ -123,8 +123,9 @@ func GenerateRaft(firstLayerPolygons []model.Polygon, config model.SliceConfig) 
 
 			if len(segments) > 0 {
 				paths = append(paths, model.ContinuousPath{
-					Segments: segments,
-					PathType: model.PathExtrusion,
+					Segments:   segments,
+					PathType:   model.PathExtrusion,
+					LayerIndex: layer,
 				})
 			}
 		}

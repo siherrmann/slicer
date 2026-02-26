@@ -57,8 +57,9 @@ func GenerateLayerPath(polygons []model.Polygon, params model.SliceConfig, model
 
 			if len(segments) > 0 {
 				paths = append(paths, model.ContinuousPath{
-					Segments: segments,
-					PathType: model.PathExtrusion,
+					Segments:   segments,
+					PathType:   model.PathExtrusion,
+					LayerIndex: layerIndex,
 				})
 			}
 		}
@@ -67,8 +68,8 @@ func GenerateLayerPath(polygons []model.Polygon, params model.SliceConfig, model
 
 	// Process each shell completely (walls + infill) before moving to next shell
 	for _, shell := range shells {
-		// 1. Print all walls for this shell
-		walls := GenerateWalls(shell, params)
+		// 1. Print all walls		// 2. Standard mode walls
+		walls := GenerateWalls(shell, params, layerIndex)
 		paths = append(paths, walls...)
 
 		// 2. Print infill for this shell
@@ -292,7 +293,8 @@ func cutInfill(pattern model.ContinuousPath, shell *model.Polygon, holes []model
 	}
 
 	return []model.ContinuousPath{{
-		Segments: resultSegments,
-		PathType: model.PathExtrusion,
+		Segments:   resultSegments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: pattern.LayerIndex, // preserve layer index
 	}}
 }

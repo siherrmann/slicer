@@ -21,8 +21,9 @@ func GenerateFullSTLPath(bm *model.BaseModel, config model.SliceConfig) []model.
 			pathStart := path.Segments[0].Start
 			if currentPos.Distance(pathStart) > 0.01 {
 				fullPaths = append(fullPaths, model.ContinuousPath{
-					Segments: []model.PathSegment{{Start: currentPos, End: pathStart, IsTravel: true}},
-					PathType: model.PathTravel,
+					Segments:   []model.PathSegment{{Start: currentPos, End: pathStart, IsTravel: true}},
+					PathType:   model.PathTravel,
+					LayerIndex: path.LayerIndex,
 				})
 			}
 			fullPaths = append(fullPaths, path)
@@ -88,8 +89,9 @@ func GenerateFullSTLPath(bm *model.BaseModel, config model.SliceConfig) []model.
 			}
 
 			fullPaths = append(fullPaths, model.ContinuousPath{
-				Segments: zHopSegments,
-				PathType: model.PathTravel,
+				Segments:   zHopSegments,
+				PathType:   model.PathTravel,
+				LayerIndex: i,
 			})
 			currentPos = zHopPos
 		}
@@ -106,7 +108,8 @@ func GenerateFullSTLPath(bm *model.BaseModel, config model.SliceConfig) []model.
 			Segments: []model.PathSegment{
 				{Start: currentPos, End: config.EndPosition, IsTravel: true},
 			},
-			PathType: model.PathTravel,
+			PathType:   model.PathTravel,
+			LayerIndex: len(bm.Slices) - 1,
 		})
 	}
 
@@ -167,8 +170,9 @@ func CleanFullPaths(paths []model.ContinuousPath, epsilon float64) model.Continu
 	flushSection(currentSection, currentIsTravel)
 
 	return model.ContinuousPath{
-		Segments: cleanedSegments,
-		PathType: model.PathExtrusion,
+		Segments:   cleanedSegments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: paths[0].LayerIndex, // preserve layer index from the first path
 	}
 }
 

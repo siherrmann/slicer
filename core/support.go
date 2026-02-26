@@ -1418,7 +1418,7 @@ func GenerateSupportPaths(bm *model.BaseModel, config model.SliceConfig) map[int
 
 					poly := model.Polygon{Points: points, IsClosed: true}
 					poly.SetZ(z)
-					if path := poly.ToContinuousPath(config.SupportSpeed, model.CategorySupport); len(path.Segments) > 0 {
+					if path := poly.ToContinuousPath(config.SupportSpeed, model.CategorySupport, i); len(path.Segments) > 0 {
 						layerPaths = append(layerPaths, path)
 					}
 				}
@@ -1477,7 +1477,8 @@ func GenerateSupportPaths(bm *model.BaseModel, config model.SliceConfig) map[int
 										Speed:    config.SupportSpeed,
 										Category: model.CategorySupport,
 									}},
-									PathType: model.PathExtrusion,
+									PathType:   model.PathExtrusion,
+									LayerIndex: i,
 								})
 								startX = -1
 							}
@@ -1501,7 +1502,8 @@ func GenerateSupportPaths(bm *model.BaseModel, config model.SliceConfig) map[int
 								Speed:    config.SupportSpeed,
 								Category: model.CategorySupport,
 							}},
-							PathType: model.PathExtrusion,
+							PathType:   model.PathExtrusion,
+							LayerIndex: i,
 						})
 					}
 				}
@@ -1542,8 +1544,9 @@ func GenerateSupportPaths(bm *model.BaseModel, config model.SliceConfig) map[int
 							}
 
 							layerPaths = append(layerPaths, model.ContinuousPath{
-								Segments: []model.PathSegment{seg},
-								PathType: model.PathExtrusion,
+								Segments:   []model.PathSegment{seg},
+								PathType:   model.PathExtrusion,
+								LayerIndex: i,
 							})
 							startX = -1
 						}
@@ -1568,8 +1571,9 @@ func GenerateSupportPaths(bm *model.BaseModel, config model.SliceConfig) map[int
 						Category: model.CategorySupport,
 					}
 					layerPaths = append(layerPaths, model.ContinuousPath{
-						Segments: []model.PathSegment{seg},
-						PathType: model.PathExtrusion,
+						Segments:   []model.PathSegment{seg},
+						PathType:   model.PathExtrusion,
+						LayerIndex: i,
 					})
 				}
 			}

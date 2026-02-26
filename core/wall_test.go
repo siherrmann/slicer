@@ -70,7 +70,7 @@ func TestGenerateWalls(t *testing.T) {
 		IsHole:   false,
 	}
 
-	walls := GenerateWalls(shell, *config)
+	walls := GenerateWalls(shell, *config, 0)
 
 	// Since ShellCount is 2, we expect 2 paths (outer wall and inner wall)
 	assert.Equal(t, 2, len(walls))
@@ -101,7 +101,7 @@ func TestGenerateWalls(t *testing.T) {
 
 	// Now test ShellOutsideIn
 	config.ShellOrder = model.ShellOutsideIn
-	wallsReversed := GenerateWalls(shell, *config)
+	wallsReversed := GenerateWalls(shell, *config, 0)
 	assert.Equal(t, 2, len(wallsReversed))
 
 	// Reverse order means it should be [InnerWall, OuterWall]

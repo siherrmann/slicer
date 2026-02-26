@@ -32,7 +32,7 @@ func GenerateSkirt(firstLayer []model.Polygon, params model.SliceConfig) []model
 				brimLine := shell.OffsetPolygon(offset)
 				if brimLine != nil && len(brimLine.Points) > 2 {
 					brimLine.IsClosed = true
-					paths = append(paths, brimLine.ToContinuousPath(params.FirstLayerSpeed, model.CategoryOuterWall))
+					paths = append(paths, brimLine.ToContinuousPath(params.FirstLayerSpeed, model.CategoryOuterWall, 0))
 				}
 			}
 		}
@@ -47,7 +47,7 @@ func GenerateSkirt(firstLayer []model.Polygon, params model.SliceConfig) []model
 				skirtLine := shell.OffsetPolygon(offset)
 				if skirtLine != nil && len(skirtLine.Points) > 2 {
 					skirtLine.IsClosed = true
-					paths = append(paths, skirtLine.ToContinuousPath(params.FirstLayerSpeed, model.CategoryOuterWall))
+					paths = append(paths, skirtLine.ToContinuousPath(params.FirstLayerSpeed, model.CategoryOuterWall, 0))
 				}
 			}
 		}

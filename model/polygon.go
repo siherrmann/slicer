@@ -116,7 +116,7 @@ func (p *Polygon) SetZ(z float64) {
 }
 
 // ToContinuousPath converts a Polygon into a ContinuousPath with the given speed and category.
-func (p *Polygon) ToContinuousPath(speed float64, category PathCategory) ContinuousPath {
+func (p *Polygon) ToContinuousPath(speed float64, category PathCategory, layerIndex int) ContinuousPath {
 	if len(p.Points) < 2 {
 		return ContinuousPath{}
 	}
@@ -139,8 +139,9 @@ func (p *Polygon) ToContinuousPath(speed float64, category PathCategory) Continu
 	}
 
 	return ContinuousPath{
-		Segments: segments,
-		PathType: PathExtrusion,
+		Segments:   segments,
+		PathType:   PathExtrusion,
+		LayerIndex: layerIndex,
 	}
 }
 

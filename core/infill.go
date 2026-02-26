@@ -94,8 +94,9 @@ func GenerateLineInfill(bounds model.BoundingBox, params model.SliceConfig, laye
 	}
 
 	return model.ContinuousPath{
-		Segments: segments,
-		PathType: model.PathExtrusion,
+		Segments:   segments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: layerIndex,
 	}
 }
 
@@ -147,8 +148,9 @@ func GenerateGridInfill(bounds model.BoundingBox, params model.SliceConfig, laye
 	}
 
 	return model.ContinuousPath{
-		Segments: segments,
-		PathType: model.PathExtrusion,
+		Segments:   segments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: layerIndex,
 	}
 }
 
@@ -177,8 +179,9 @@ func GenerateTriHexagonInfill(bounds model.BoundingBox, params model.SliceConfig
 	}
 
 	return model.ContinuousPath{
-		Segments: segments,
-		PathType: model.PathExtrusion,
+		Segments:   segments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: layerIndex,
 	}
 }
 
@@ -262,8 +265,9 @@ func GenerateHoneycombInfill(bounds model.BoundingBox, params model.SliceConfig,
 	}
 
 	return model.ContinuousPath{
-		Segments: segments,
-		PathType: model.PathExtrusion,
+		Segments:   segments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: layerIndex,
 	}
 }
 
@@ -298,8 +302,9 @@ func GenerateCrossInfill(bounds model.BoundingBox, params model.SliceConfig, lay
 	}
 
 	return model.ContinuousPath{
-		Segments: segments,
-		PathType: model.PathExtrusion,
+		Segments:   segments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: layerIndex,
 	}
 }
 
@@ -420,8 +425,9 @@ func GenerateGyroidInfill(bounds model.BoundingBox, params model.SliceConfig, la
 	}
 
 	return model.ContinuousPath{
-		Segments: segments,
-		PathType: model.PathExtrusion,
+		Segments:   segments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: layerIndex,
 	}
 }
 
@@ -630,8 +636,9 @@ func GenerateLineInfillFull(bounds model.BoundingBox, params model.SliceConfig, 
 	}
 
 	return model.ContinuousPath{
-		Segments: segments,
-		PathType: model.PathExtrusion,
+		Segments:   segments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: layerIndex,
 	}
 }
 
@@ -690,8 +697,9 @@ func GenerateRectilinearInfillFull(bounds model.BoundingBox, params model.SliceC
 	}
 
 	return model.ContinuousPath{
-		Segments: segments,
-		PathType: model.PathExtrusion,
+		Segments:   segments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: layerIndex,
 	}
 }
 
@@ -730,7 +738,8 @@ func GenerateConcentricInfillFull(shell *model.Polygon, params model.SliceConfig
 	}
 
 	return model.ContinuousPath{
-		Segments: segments,
-		PathType: model.PathExtrusion,
+		Segments:   segments,
+		PathType:   model.PathExtrusion,
+		LayerIndex: layerIndex,
 	}
 }
