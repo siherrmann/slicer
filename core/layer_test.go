@@ -25,11 +25,11 @@ func TestGenerateLayerPath_VaseMode(t *testing.T) {
 	bounds := model.BoundingBox{MinX: 0, MinY: 0, MaxX: 10, MaxY: 10, MinZ: 0, MaxZ: 10}
 
 	// Layer 0 - standard generation for base
-	pathsL0 := GenerateLayerPath(polygons, *config, bounds, 0)
+	pathsL0 := GenerateLayerPath(polygons, nil, nil, *config, bounds, 0)
 	assert.Greater(t, len(pathsL0), 0)
 
 	// Layer 1 - Vase mode interpolation
-	pathsL1 := GenerateLayerPath(polygons, *config, bounds, 1)
+	pathsL1 := GenerateLayerPath(polygons, nil, nil, *config, bounds, 1)
 	assert.Greater(t, len(pathsL1), 0)
 
 	// In vase mode, Z should strictly increase across the segment endpoints
@@ -51,6 +51,8 @@ func TestGenerateLayerPath_Standard(t *testing.T) {
 	config.VaseMode = false
 	config.InfillDensity = 0.2
 	config.ShellCount = 2
+	config.TopLayers = 0
+	config.BottomLayers = 0
 
 	polygons := []model.Polygon{
 		// Shell
@@ -72,7 +74,7 @@ func TestGenerateLayerPath_Standard(t *testing.T) {
 	}
 	bounds := model.BoundingBox{MinX: 0, MinY: 0, MaxX: 20, MaxY: 20, MinZ: 0, MaxZ: 10}
 
-	paths := GenerateLayerPath(polygons, *config, bounds, 1)
+	paths := GenerateLayerPath(polygons, nil, nil, *config, bounds, 1)
 
 	assert.Greater(t, len(paths), 0)
 

@@ -8,7 +8,7 @@ import (
 )
 
 // GenerateLayerPath berechnet den optimierten Werkzeugpfad
-func GenerateLayerPath(polygons []model.Polygon, params model.SliceConfig, modelBounds model.BoundingBox, layerIndex int) []model.ContinuousPath {
+func GenerateLayerPath(polygons []model.Polygon, aboveSlice, belowSlice *model.Slice, params model.SliceConfig, modelBounds model.BoundingBox, layerIndex int) []model.ContinuousPath {
 	var paths []model.ContinuousPath
 	var shells []model.Polygon
 	var holes []model.Polygon
@@ -78,18 +78,149 @@ func GenerateLayerPath(polygons []model.Polygon, params model.SliceConfig, model
 			continue
 		}
 
-		// Generate the uncut infill pattern
 		// Calculate Z position for this layer
 		z := shell.Points[0].Z
-		infillPattern := GenerateInfill(modelBounds, &shell, params, layerIndex, z)
 
-		// Cut the infill pattern to fit within the shell and avoid holes (if needed)
-		if len(infillPattern.Segments) > 0 {
-			infillPaths := cutInfill(infillPattern, infillArea, holes)
-			paths = append(paths, infillPaths...)
+		// Generate the uncut infill patterns
+		sparsePattern := GenerateInfill(modelBounds, &shell, params, layerIndex, z)
+
+		var solidPattern model.ContinuousPath
+		if params.TopLayers > 0 || params.BottomLayers > 0 {
+			// Generate solid lines using rectilinear zigzag for 100% density roofs
+			solidPattern = GenerateRectilinearInfillFull(modelBounds, params, layerIndex, z)
+		}
+
+		if len(sparsePattern.Segments) > 0 {
+			sparsePaths := cutInfill(sparsePattern, infillArea, holes)
+			solidPaths := cutInfill(solidPattern, infillArea, holes)
+
+			var finalSparseSegments []model.PathSegment
+			var finalSolidSegments []model.PathSegment
+
+			for _, path := range sparsePaths {
+				for _, seg := range path.Segments {
+					if seg.IsTravel {
+						continue
+					}
+					mid := seg.Start.Add(seg.End.Sub(seg.Start).Scale(0.5))
+
+					// If the midpoint is not covered by ABOVE or BELOW, it's a roof/floor.
+					isTop := aboveSlice == nil || !aboveSlice.ContainsPoint(mid)
+					isBottom := belowSlice == nil || !belowSlice.ContainsPoint(mid)
+
+					if (isTop && params.TopLayers > 0) || (isBottom && params.BottomLayers > 0) {
+						// Don't keep sparse infill here, we'll use solid instead.
+						continue
+					}
+
+					finalSparseSegments = append(finalSparseSegments, seg)
+				}
+			}
+
+			if len(solidPaths) > 0 {
+				for _, path := range solidPaths {
+					for _, seg := range path.Segments {
+						if seg.IsTravel {
+							continue
+						}
+						mid := seg.Start.Add(seg.End.Sub(seg.Start).Scale(0.5))
+
+						isTop := aboveSlice == nil || !aboveSlice.ContainsPoint(mid)
+						isBottom := belowSlice == nil || !belowSlice.ContainsPoint(mid)
+
+						if (isTop && params.TopLayers > 0) || (isBottom && params.BottomLayers > 0) {
+							seg.Category = model.CategorySolidInfill
+							finalSolidSegments = append(finalSolidSegments, seg)
+						}
+					}
+				}
+			}
+
+			// Assemble sparse and solid segments into continuous paths to minimize travel
+			if len(finalSparseSegments) > 0 {
+				paths = append(paths, optimizeSegmentsToPaths(finalSparseSegments, layerIndex, model.CategoryInfill)...)
+			}
+			if len(finalSolidSegments) > 0 {
+				paths = append(paths, optimizeSegmentsToPaths(finalSolidSegments, layerIndex, model.CategorySolidInfill)...)
+			}
 		}
 	}
 
+	return paths
+}
+
+// optimizeSegmentsToPaths chains disconnected segments together with minimal travel moves
+func optimizeSegmentsToPaths(segments []model.PathSegment, layerIndex int, category model.PathCategory) []model.ContinuousPath {
+	if len(segments) == 0 {
+		return nil
+	}
+
+	var paths []model.ContinuousPath
+	var currentPath model.ContinuousPath
+	currentPath.LayerIndex = layerIndex
+	currentPath.PathType = model.PathExtrusion
+
+	used := make([]bool, len(segments))
+
+	// Start with first segment
+	firstSeg := segments[0]
+	firstSeg.Category = category
+	currentPath.Segments = append(currentPath.Segments, firstSeg)
+	used[0] = true
+
+	currentPoint := firstSeg.End
+
+	for {
+		bestDist := math.MaxFloat64
+		bestIdx := -1
+		reverse := false
+
+		for i, seg := range segments {
+			if used[i] {
+				continue
+			}
+
+			d1 := currentPoint.Distance(seg.Start)
+			if d1 < bestDist {
+				bestDist = d1
+				bestIdx = i
+				reverse = false
+			}
+
+			d2 := currentPoint.Distance(seg.End)
+			if d2 < bestDist {
+				bestDist = d2
+				bestIdx = i
+				reverse = true
+			}
+		}
+
+		if bestIdx == -1 {
+			break
+		}
+
+		nextSeg := segments[bestIdx]
+		if reverse {
+			nextSeg.Start, nextSeg.End = nextSeg.End, nextSeg.Start
+		}
+
+		// Add travel move if disconnected
+		if bestDist > 0.01 {
+			currentPath.Segments = append(currentPath.Segments, model.PathSegment{
+				Start:    currentPoint,
+				End:      nextSeg.Start,
+				IsTravel: true,
+				Category: model.CategoryTravel,
+			})
+		}
+
+		nextSeg.Category = category
+		currentPath.Segments = append(currentPath.Segments, nextSeg)
+		used[bestIdx] = true
+		currentPoint = nextSeg.End
+	}
+
+	paths = append(paths, currentPath)
 	return paths
 }
 

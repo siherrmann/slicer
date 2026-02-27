@@ -163,3 +163,23 @@ func (t Triangle) IntersectZPlane(z float64) (LineSegment, bool) {
 
 	return LineSegment{}, false
 }
+
+// ContainsPoint checks if a point is inside the slice's solid geometry
+func (s *Slice) ContainsPoint(p Vector3) bool {
+	inShell := false
+	for _, poly := range s.Polygons {
+		if !poly.IsHole && poly.ContainsPoint(p) {
+			inShell = true
+			break
+		}
+	}
+	if !inShell {
+		return false
+	}
+	for _, poly := range s.Polygons {
+		if poly.IsHole && poly.ContainsPoint(p) {
+			return false
+		}
+	}
+	return true
+}

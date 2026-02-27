@@ -152,14 +152,21 @@ func (p *Polygon) OffsetPolygon(distance float64) *Polygon {
 		return nil
 	}
 
+	// Step 0: Pre-clean the polygon to remove microscopic or collinear segments.
+	// This prevents numerical instability leading to millions of mm of wall paths.
+	cleanedPoints := ramerDouglasPeuckerPolygon(p.Points, 0.001)
+	if len(cleanedPoints) < 3 {
+		return nil
+	}
+
 	// Step 1: Offset each edge by the perpendicular distance
-	n := len(p.Points)
+	n := len(cleanedPoints)
 	offsetEdges := make([]LineSegment, n)
 	for i := range n {
 		j := (i + 1) % n
 
-		p1 := p.Points[i]
-		p2 := p.Points[j]
+		p1 := cleanedPoints[i]
+		p2 := cleanedPoints[j]
 
 		// Edge vector
 		edge := p2.Sub(p1)

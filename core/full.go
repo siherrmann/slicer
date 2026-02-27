@@ -64,7 +64,16 @@ func GenerateFullSTLPath(bm *model.BaseModel, config model.SliceConfig) []model.
 			defer func() { <-semaphore }() // Release
 
 			slice := bm.Slices[idx]
-			results[idx] = GenerateLayerPath(slice.Polygons, config, bm.Bounds, idx)
+
+			var aboveSlice, belowSlice *model.Slice
+			if idx+1 < len(bm.Slices) {
+				aboveSlice = bm.Slices[idx+1]
+			}
+			if idx-1 >= 0 {
+				belowSlice = bm.Slices[idx-1]
+			}
+
+			results[idx] = GenerateLayerPath(slice.Polygons, aboveSlice, belowSlice, config, bm.Bounds, idx)
 		}(i)
 	}
 
